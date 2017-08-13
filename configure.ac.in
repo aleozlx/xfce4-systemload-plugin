@@ -67,6 +67,31 @@ XDT_CHECK_OPTIONAL_PACKAGE([UPOWER_GLIB], [upower-glib], [0.9.0], [upower],
                            [upower for adapting update interval to power state])
 
 dnl ***********************************
+dnl *** Check for Nvidia support    ***
+dnl ***********************************
+dnl ref: http://git.wpitchoune.net/gitweb/?p=psensor.git;a=blob_plain;f=configure.ac;hb=HEAD
+dnl ref: http://sensors-applet.sourceforge.net/
+AC_CHECK_HEADERS(NVCtrl/NVCtrl.h NVCtrl/NVCtrlLib.h, 
+		 [ HAVE_NVIDIA=true ], [], 
+                 [ 
+		  #include <X11/Xlib.h>
+                 ])
+if test -n "${X11_LIBS}"; then
+LIBS="${LIBS} -lX11 -lXext"
+
+if test "${HAVE_NVIDIA}" = "true"; then
+  AC_CHECK_LIB(XNVCtrl,XNVCTRLQueryExtension, 
+                 [NVIDIA_LIBS="-lXNVCtrl -lX11 -lXext" 
+                  AC_DEFINE(HAVE_NVIDIA,1,[NVidia support enabled])
+		 ])			
+fi
+fi
+AM_CONDITIONAL(NVIDIA, test -n "$NVIDIA_LIBS")
+AC_SUBST(NVIDIA_CFLAGS)
+AC_SUBST(NVIDIA_LIBS)
+
+
+dnl ***********************************
 dnl *** Check for debugging support ***
 dnl ***********************************
 XDT_FEATURE_DEBUG()
